@@ -41,7 +41,7 @@ impl Mapper11 {
 impl Mapper for Mapper11 {
     fn init(&mut self, prg_count: u8, is_chr_ram: bool, chr_count: u8, _sram_count: u8) {
         // even and positive
-        assert!(prg_count % 2 == 0 && prg_count > 0);
+        assert!(prg_count.is_multiple_of(2) && prg_count > 0);
 
         self.prg_count = prg_count / 2;
         self.chr_count = chr_count;

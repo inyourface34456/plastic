@@ -356,7 +356,7 @@ impl APU2A03 {
                     self.request_interrupt_flag_change.set(true);
                 }
 
-                self.wait_reset = if self.cycle % 2 == 0 { 4 } else { 3 };
+                self.wait_reset = if self.cycle.is_multiple_of(2) { 4 } else { 3 };
             }
         }
     }
@@ -437,7 +437,7 @@ impl APU2A03 {
         // clocked on every CPU cycle
         self.triangle.timer_clock();
 
-        if self.cycle % 2 == 0 {
+        if self.cycle.is_multiple_of(2) {
             self.square_pulse_1.timer_clock();
             self.square_pulse_2.timer_clock();
             self.noise.timer_clock();

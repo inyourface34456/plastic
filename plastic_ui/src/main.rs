@@ -235,7 +235,7 @@ impl App {
     }
 
     fn show_menu(&mut self, ui: &mut egui::Ui) {
-        egui::menu::bar(ui, |ui| {
+        egui::MenuBar::new().ui(ui, |ui| {
             ui.menu_button("File", |ui| {
                 if ui
                     .add(

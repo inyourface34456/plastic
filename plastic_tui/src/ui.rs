@@ -10,8 +10,8 @@ use plastic_core::{
 use ratatui::{
     prelude::*,
     style::Color,
+    text::Line,
     widgets::{
-        block::{Position, Title},
         canvas::{Canvas, Painter, Shape},
         Block, Borders, Clear, Padding, Paragraph,
     },
@@ -24,7 +24,8 @@ use tui_menu::{Menu, MenuEvent as tuiMenuEvent, MenuItem, MenuState};
 
 use gilrs::{Button, Event as GilrsEvent, EventType, Gilrs};
 
-use crossterm::{
+use ratatui::crossterm::{
+    self,
     cursor::{Hide, Show},
     event::{
         Event, KeyCode, KeyEventKind, KeyModifiers, KeyboardEnhancementFlags,
@@ -233,34 +234,24 @@ impl Ui {
 
                 let mut block = Block::default()
                     .borders(Borders::ALL)
-                    .title(Title::from("Plastic").alignment(Alignment::Center))
+                    .title(Line::from("Plastic").centered())
+                    .title(Line::from(format!("(FPS: {:.2})", fps.fps())).left_aligned())
                     .title(
-                        Title::from(format!("(FPS: {:.2})", fps.fps())).alignment(Alignment::Left),
-                    )
-                    .title(
-                        Title::from(format!(
+                        Line::from(format!(
                             "(Terminal size: {}x{})",
                             f.area().width,
                             f.area().height
                         ))
-                        .alignment(Alignment::Right),
+                        .right_aligned(),
                     )
                     .title_style(Style::default().bold().fg(Color::Yellow));
                 if self.paused {
-                    block = block.title(Title::from("[Paused]").alignment(Alignment::Center));
+                    block = block.title(Line::from("[Paused]").centered());
                 }
                 if let Some(error) = &self.error {
                     block = block
-                        .title(
-                            Title::from("Error:".red().bold())
-                                .position(Position::Bottom)
-                                .alignment(Alignment::Center),
-                        )
-                        .title(
-                            Title::from(error.as_str().red().bold())
-                                .position(Position::Bottom)
-                                .alignment(Alignment::Center),
-                        );
+                        .title_bottom(Line::from("Error:".red().bold()).centered())
+                        .title_bottom(Line::from(error.as_str().red().bold()).centered());
                 }
 
                 if self.nes.is_empty() {
@@ -404,7 +395,9 @@ impl Ui {
             }
 
             if self.is_file_explorer_open {
-                self.file_explorer.handle(&event).unwrap();
+                self.file_explorer
+                    .handle(ratatui_explorer::Input::from(&event))
+                    .unwrap();
             }
         }
 

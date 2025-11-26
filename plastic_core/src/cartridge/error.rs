@@ -62,10 +62,12 @@ impl From<ioError> for CartridgeError {
     }
 }
 
+#[derive(Default)]
 pub enum SramError {
     NoSramFileFound,
     SramFileSizeDoesNotMatch,
     FailedToSaveSramFile,
+    #[default]
     Others,
 }
 
@@ -103,11 +105,5 @@ impl Display for SramError {
 impl Debug for SramError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmtResult {
         write!(f, "{}", self.get_message())
-    }
-}
-
-impl Default for SramError {
-    fn default() -> Self {
-        Self::Others
     }
 }

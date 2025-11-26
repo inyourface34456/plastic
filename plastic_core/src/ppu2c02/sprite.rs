@@ -2,7 +2,8 @@ use bitflags::bitflags;
 use serde::{Deserialize, Serialize};
 
 bitflags! {
-   #[derive(Serialize, Deserialize)]
+   #[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+   #[serde(transparent)]
    pub struct SpriteAttribute: u8 {
        const PALETTE = 0b00000011;
        const PRIORITY = 0b00100000;
@@ -13,7 +14,7 @@ bitflags! {
 
 impl SpriteAttribute {
     pub fn palette(&self) -> u8 {
-        self.bits & Self::PALETTE.bits
+        self.bits() & Self::PALETTE.bits()
     }
 
     pub fn is_flip_horizontal(&self) -> bool {
@@ -107,26 +108,27 @@ impl Sprite {
                 }
             }
             1 => self.tile_index,
-            2 => self.attributes.bits,
+            2 => self.attributes.bits(),
             3 => self.x,
             _ => unreachable!(),
         }
     }
 
     pub fn write_offset(&mut self, offset: u8, data: u8) {
-        let to_change = match offset {
-            0 => &mut self.y,
-            1 => &mut self.tile_index,
-            2 => &mut self.attributes.bits,
-            3 => &mut self.x,
-            _ => unreachable!(),
-        };
         // y location is set to the position before the sprite (so weird)
         // but do not wrap 255
-        *to_change = if offset == 0 && data != 255 {
+        let value = if offset == 0 && data != 255 {
             data + 1
         } else {
             data
+        };
+
+        match offset {
+            0 => self.y = value,
+            1 => self.tile_index = value,
+            2 => self.attributes = SpriteAttribute::from_bits_retain(value),
+            3 => self.x = value,
+            _ => unreachable!(),
         }
     }
 }

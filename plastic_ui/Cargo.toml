@@ -1,6 +1,6 @@
 [package]
 name = "plastic"
-version = "0.3.4"
+version = "0.3.5"
 authors = ["Amjad Alsharafi <amjadsharafi10@gmail.com>"]
 edition = "2021"
 description = "A NES emulator with GUI and TUI"
@@ -11,13 +11,15 @@ keywords = ["nes", "nintendo", "emulator"]
 categories = ["emulators"]
 
 [dependencies]
-plastic_core = { path = "../plastic_core", version = "0.3", features = ["frontend_misc"] }
+plastic_core = { path = "../plastic_core", version = "0.3", features = [
+  "frontend_misc",
+] }
 
-egui = "0.29"
-egui-winit = "0.29"
-directories = "5.0"
-eframe = "0.29"
-rfd = "0.15"
+egui = "0.33"
+egui-winit = "0.33"
+directories = "6.0"
+eframe = "0.33"
+rfd = "0.16"
 dynwave = "0.2"
 gilrs = "0.11"
 
@@ -31,12 +33,39 @@ copyright = "2020, Amjad Alsharafi <amjadsharafi10@gmail.com>"
 priority = "optional"
 section = "games"
 assets = [
-    ["target/release/plastic", "usr/bin/", "755"],
-    ["target/release/plastic_tui", "usr/bin/", "755"],
-    ["../LICENSE", "usr/share/licenses/plastic/", "644"],
-    ["../README.md", "usr/share/doc/plastic/", "644"],
-    ["../docs/man/plastic.1", "usr/share/man/man1/", "644"],
-    ["../package/plastic.desktop", "usr/share/applications/", "644"],
-    ["../images/icon.png", "usr/share/icons/plastic-icon.png", "644"],
+  [
+    "target/release/plastic",
+    "usr/bin/",
+    "755",
+  ],
+  [
+    "target/release/plastic_tui",
+    "usr/bin/",
+    "755",
+  ],
+  [
+    "../LICENSE",
+    "usr/share/licenses/plastic/",
+    "644",
+  ],
+  [
+    "../README.md",
+    "usr/share/doc/plastic/",
+    "644",
+  ],
+  [
+    "../docs/man/plastic.1",
+    "usr/share/man/man1/",
+    "644",
+  ],
+  [
+    "../package/plastic.desktop",
+    "usr/share/applications/",
+    "644",
+  ],
+  [
+    "../images/icon.png",
+    "usr/share/icons/plastic-icon.png",
+    "644",
+  ],
 ]
-

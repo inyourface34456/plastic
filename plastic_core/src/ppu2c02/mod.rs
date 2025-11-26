@@ -20,6 +20,7 @@ use std::cell::Cell;
 use std::cmp::min;
 
 bitflags! {
+    #[derive(Copy, Clone, Debug, PartialEq, Eq)]
     pub struct ControlReg: u8 {
         const BASE_NAMETABLE = 0b00000011;
         const VRAM_INCREMENT = 0b00000100;
@@ -34,7 +35,7 @@ bitflags! {
 impl ControlReg {
     pub fn nametable_selector(&self) -> u8 {
         // 0 = $2000; 1 = $2400; 2 = $2800; 3 = $2C00
-        self.bits & Self::BASE_NAMETABLE.bits
+        self.bits() & Self::BASE_NAMETABLE.bits()
     }
 
     pub fn vram_increment(&self) -> u16 {
@@ -64,6 +65,7 @@ impl ControlReg {
 }
 
 bitflags! {
+    #[derive(Copy, Clone, Debug, PartialEq, Eq)]
     pub struct MaskReg: u8 {
         const GRAYSCALE_ENABLE = 0b00000001;
         const SHOW_BACKGROUND_LEFTMOST_8 = 0b00000010;
@@ -107,6 +109,7 @@ impl MaskReg {
 }
 
 bitflags! {
+    #[derive(Copy, Clone, Debug, PartialEq, Eq)]
     pub struct StatusReg: u8 {
         const SPRITE_OVERFLOW = 0b00100000;
         const SPRITE_0_HIT = 0b01000000;
@@ -222,8 +225,9 @@ where
                     // cycles of the start of vertical blank will return 0 in bit 7
                     // but clear the latch anyway, causing NMI to not occur that frame
                     if self.cycle <= 2 {
-                        self.reg_status
-                            .set(StatusReg::from_bits(self.reg_status.get().bits & 0x7F).unwrap());
+                        self.reg_status.set(
+                            StatusReg::from_bits(self.reg_status.get().bits() & 0x7F).unwrap(),
+                        );
                     }
                     // for NMI it has quite a different range
                     // source: tests
@@ -232,7 +236,7 @@ where
                         self.nmi_occured_in_this_frame.set(true);
                     }
                 }
-                let result = self.reg_status.get().bits;
+                let result = self.reg_status.get().bits();
                 //  reading the status register will clear bit 7
                 self.reg_status
                     .set(StatusReg::from_bits(result & 0x7F).unwrap());
@@ -276,7 +280,7 @@ where
             // After power/reset, writes to this register are ignored for about 30,000 cycles
             // TODO: not sure, if I should account for that
             Register::Control => {
-                self.reg_control.bits = data;
+                self.reg_control = ControlReg::from_bits_retain(data);
 
                 // write nametable also in top_left vram address
                 self.vram_address_top_left &= 0xF3FF;
@@ -305,7 +309,7 @@ where
                     }
                 }
             }
-            Register::Mask => self.reg_mask.bits = data,
+            Register::Mask => self.reg_mask = MaskReg::from_bits_retain(data),
             Register::OmaAddress => self.reg_oam_addr.set(data),
             Register::OmaData => {
                 self.write_sprite_byte(self.reg_oam_addr.get(), data);
@@ -348,8 +352,10 @@ where
                     self.vram_address_top_left |= (data as u16) << 8;
 
                     // update nametable
-                    self.reg_control.bits &= !(ControlReg::BASE_NAMETABLE.bits);
-                    self.reg_control.bits |= (data >> 2) & 0b11;
+                    let current = self.reg_control.bits();
+                    self.reg_control = ControlReg::from_bits_retain(
+                        (current & !(ControlReg::BASE_NAMETABLE.bits())) | ((data >> 2) & 0b11),
+                    );
                 }
 
                 self.w_toggle.set(!self.w_toggle.get());
@@ -988,7 +994,7 @@ where
                 self.secondary_oam = [Sprite::filled_ff(); 8];
             }
             // fetch and reload shift registers
-            8..=256 if self.cycle % 8 == 0 => {
+            8..=256 if self.cycle.is_multiple_of(8) => {
                 self.reload_background_shift_registers();
 
                 if self.cycle != 256 {

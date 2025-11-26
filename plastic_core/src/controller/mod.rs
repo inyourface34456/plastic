@@ -24,6 +24,7 @@ pub enum NESKey {
 }
 
 bitflags! {
+   #[derive(Copy, Clone, Debug, PartialEq, Eq)]
    pub struct StandardNESControllerState : u8{
         const A = 1 << 0;
         const B = 1 << 1;
@@ -80,7 +81,7 @@ impl Bus for Controller {
     fn read(&self, _address: u16, _device: Device) -> u8 {
         // refresh polled here
         if self.polling {
-            self.polled_state.set(self.primary_state.bits);
+            self.polled_state.set(self.primary_state.bits());
         }
         let result = self.polled_state.get() & 1;
 
@@ -94,7 +95,7 @@ impl Bus for Controller {
 
         // if the state changed, then refresh
         if self.polling ^ new_polling {
-            self.polled_state.set(self.primary_state.bits);
+            self.polled_state.set(self.primary_state.bits());
         }
 
         self.polling = new_polling;
